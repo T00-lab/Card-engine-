@@ -1,7 +1,10 @@
 const express = require('express');
-const stripe = require('stripe')('sk_test_YOUR_STRIPE_SECRET_KEY'); // Replace with your actual Test Secret Key
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); 
 const app = express();
-const endpointSecret = "whsec_YOUR_WEBHOOK_SIGNING_SECRET"; // Find this in your Stripe Webhook dashboard
+const endpointSecret = process.env.WEBHOOK_SECRET;
+
+// ... (rest of your webhook code remains the same)
+
 
 app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
   const sig = req.headers['stripe-signature'];
