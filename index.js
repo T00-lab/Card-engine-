@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 
-// Stripe setup using your Railway Variables
+// Stripe setup using Railway Variables
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.WEBHOOK_SECRET;
 
@@ -12,21 +12,19 @@ app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
   let event;
 
   try {
-    // ... inside your app.post('/webhook', ...) ...
-try {
-  event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-  console.log("✅ Success! Event received:", event.type); // <--- Add this!
-} catch (err) {
-  console.log(`⚠️ Webhook error: ${err.message}`);
-  return res.status(400).send(`Webhook Error: ${err.message}`);
-}
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    console.log("✅ Success! Event received:", event.type);
+  } catch (err) {
+    console.error(`⚠️ Webhook signature verification failed: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
 
-
-  // Handle the event
+  // Handle the authorization request
   if (event.type === 'issuing_authorization.request') {
     const authorization = event.data.object;
     console.log("Checking authorization for amount:", authorization.amount);
 
+    // --- YOUR LOGIC HERE ---
     if (authorization.amount > 5000) {
       console.log("Declining: Amount too high.");
     } else {
