@@ -13,25 +13,32 @@ app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    console.log("✅ Success! Event received:", event.type);
   } catch (err) {
     console.error(`⚠️ Webhook signature verification failed: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle the authorization request
+  // --- DIAGNOSTIC LOGGING ---
+  // This will log every event type that arrives at your server
+  console.log("------------------------------------------");
+  console.log("RECEIVED EVENT TYPE:", event.type);
+  
+  // Logic to handle the specific authorization request
   if (event.type === 'issuing_authorization.request') {
     const authorization = event.data.object;
-    console.log("Checking authorization for amount:", authorization.amount);
+    console.log("✅ Success! Authorization event detected for amount:", authorization.amount);
 
-    // --- YOUR LOGIC HERE ---
     if (authorization.amount > 5000) {
-      console.log("Declining: Amount too high.");
+      console.log("Result: Declining - Amount too high.");
     } else {
-      console.log("Approving: Transaction valid.");
+      console.log("Result: Approving - Transaction valid.");
     }
+  } else {
+    console.log("Note: This event type is not currently being handled by your logic.");
   }
+  console.log("------------------------------------------");
 
+  // Always respond to Stripe to acknowledge receipt
   res.json({received: true});
 });
 
