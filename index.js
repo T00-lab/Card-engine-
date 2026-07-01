@@ -1,7 +1,22 @@
-const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const app = express();
-const endpointSecret = process.env.WEBHOOK_SECRET;
+app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // --- ADD THIS LOG TO SEE WHAT IS HAPPENING ---
+  console.log("Received event type:", event.type); 
+
+  if (event.type === 'issuing_authorization.request') {
+    // ... your logic
+  }
+  
+  res.json({received: true});
+});
 
 // IMPORTANT: express.raw is needed for Stripe to verify the signature
 app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
