@@ -12,11 +12,15 @@ app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-  } catch (err) {
-    console.error(`⚠️ Webhook signature verification failed: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
+    // ... inside your app.post('/webhook', ...) ...
+try {
+  event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  console.log("✅ Success! Event received:", event.type); // <--- Add this!
+} catch (err) {
+  console.log(`⚠️ Webhook error: ${err.message}`);
+  return res.status(400).send(`Webhook Error: ${err.message}`);
+}
+
 
   // Handle the event
   if (event.type === 'issuing_authorization.request') {
